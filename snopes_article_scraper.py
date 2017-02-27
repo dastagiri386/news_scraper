@@ -20,10 +20,14 @@ class NewsArticleSpider(scrapy.Spider):
     
 
     def parse(self, response):
-        for sel in response.xpath('/html'):
+        for sel in response.xpath('//body'):
             item = NewsArticleItem()
             item['claim'] = sel.xpath('//p[@itemprop="claimReviewed"]/text()').extract_first()
-            item['rating'] = sel.xpath('//span[@itemProp="alternateName"]/text()').extract_first()
-            item['fact_checker'] = sel.xpath('//a[@class="author-link"]/text()').extract_first()
+            if item['claim'] != None:
+                item['claim'] = str(item['claim']).replace('\n', '').strip()
+                item['rating'] = sel.xpath('//div[starts-with(@class, "claim")]/span/text()').extract_first()
+                item['fact_checker'] = sel.xpath('//a[@class="author-link"]/text()').extract_first()
+            else:
+                print "claim not present"
 
             yield item
